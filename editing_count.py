@@ -26,7 +26,7 @@ def calc_zscore(string, start, end):
     sum = 0.0
     for char in chars:
         sum += float(char)
-    zscore = float((sum - (15*0.05))/((15*0.05*0.95)**0.5))
+    zscore = float((sum - (30*0.05))/((30*0.05*0.95)**0.5))
     return zscore
 
 def get_indices(string):
@@ -34,11 +34,19 @@ def get_indices(string):
     for i in range(len(string)):
         try:
             index_low = i
-            index_high = i+15
+            index_high = i+30
             indices.append([index_low, index_high])
         except(ValueError,IndexError):
             pass
     return indices
+
+def gulp(string, start, gulp_size):
+    gulpstr = ''
+    chars = string[start:start+gulp_size]
+    for char in chars:
+        gulpstr += char
+    return gulpstr
+
 
 for file in file_list:
     with open(file,'U') as f:
@@ -59,23 +67,26 @@ for k in seqdict.keys():
         seq2 = seqdict.get(k)
     else:
         pass
+i = 0
+while gulp(seq1, i, 3) != gulp(seq2, i, 3):
+    i += 1
+    #print i
+
+j = 0
+while gulp(seq1[::-1], j, 3) != gulp(seq2[::-1], j, 3):
+    j += 1
+#print i
+newseq1 = seq1[i:(len(seq1)-j)]
+newseq2 = seq2[i:(len(seq2)-j)]
 
 compstr = ''
-for i, (res1, res2) in enumerate(zip(seq1, seq2)):
+for i, (res1, res2) in enumerate(zip(newseq1, newseq2)):
     if (res1 == '-' or res2 == '-') or res1 == res2:
          compstr += str(0)
     elif res1 != res2:
         compstr += str(1)
     else:
         pass
-
-#print compstr
-#with open("editing_out.csv", 'w') as o:
-#    for char in compstr:
-#        o.write(char + ',' + '\n')
-
-#indices = get_indices(compstr)
-#print indices
 
 zlist = []
 for s,e in get_indices(compstr):
