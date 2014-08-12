@@ -13,7 +13,8 @@ import sys
 import re
 import pylab
 
-file_list = sys.argv[1:]
+window_size = float(sys.argv[1])
+file_list = sys.argv[2:]
 
 def nonblank_lines(f):
     for l in f:
@@ -21,12 +22,14 @@ def nonblank_lines(f):
         if line:
             yield line
 
-def calc_zscore(string, start, end):
+def calc_zscore(string, start, end, window_size, mean):
     chars = string[start:end]
     sum = 0.0
+    m = mean
+    w = window_size
     for char in chars:
         sum += float(char)
-    zscore = float((sum - (30*0.05))/((30*0.05*0.95)**0.5))
+    zscore = float((sum - (w*m))/((w*m*(1-m))**0.5))
     return zscore
 
 def get_indices(string):
@@ -34,7 +37,7 @@ def get_indices(string):
     for i in range(len(string)):
         try:
             index_low = i
-            index_high = i+30
+            index_high = i+15
             indices.append([index_low, index_high])
         except(ValueError,IndexError):
             pass
@@ -47,6 +50,13 @@ def gulp(string, start, gulp_size):
         gulpstr += char
     return gulpstr
 
+def calc_mean(string):
+    sum = 0.0
+    for d in string:
+        d = float(d)
+        sum += d
+    mean = sum/(float(len(string)))
+    return mean
 
 for file in file_list:
     with open(file,'U') as f:
@@ -60,13 +70,15 @@ for file in file_list:
             else:
                 seqdict[ID] += curline
 
+index = 1
 for k in seqdict.keys():
-    if re.search('genomic', k):
-        seq1 = seqdict.get(k)
-    elif re.search('transcript', k):
-        seq2 = seqdict.get(k)
-    else:
+    print k
+    try:
+        exec("seq%d = '%s'" % (index, seqdict.get(k)))
+    except(ValueError,IndexError):
         pass
+    index += 1
+
 i = 0
 while gulp(seq1, i, 3) != gulp(seq2, i, 3):
     i += 1
@@ -88,10 +100,12 @@ for i, (res1, res2) in enumerate(zip(newseq1, newseq2)):
     else:
         pass
 
+mean = calc_mean(compstr)
+
 zlist = []
 for s,e in get_indices(compstr):
     try:
-        zlist.append(calc_zscore(compstr, s, e))
+        zlist.append(calc_zscore(compstr, s, e, window_size, mean))
     except(ValueError,IndexError):
         pass
 
