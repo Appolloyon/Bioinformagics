@@ -8,7 +8,7 @@ Intended to be used with a later program to plot out the significance
 of editing in the transcript.
 """
 
-#import os
+import os
 import sys
 import re
 import pylab
@@ -68,6 +68,7 @@ def calc_stddev(zlist, mean):
     return stddev
 
 for file in file_list:
+    name = ((os.path.basename(file)).strip(".afa"))
     with open(file,'U') as f:
         seqdict={}
         for curline in nonblank_lines(f):
@@ -79,50 +80,55 @@ for file in file_list:
             else:
                 seqdict[ID] += curline
 
-index = 1
-for k in seqdict.keys():
-    try:
-        exec("seq%d = '%s'" % (index, seqdict.get(k)))
-    except(ValueError,IndexError):
-        pass
-    index += 1
+        index = 1
+        for k in seqdict.keys():
+            try:
+                exec("seq%d = '%s'" % (index, seqdict.get(k)))
+            except(ValueError,IndexError):
+                pass
+            index += 1
 
-i = 0
-while gulp(seq1, i, 3) != gulp(seq2, i, 3):
-    i += 1
-    #print i
+        i = 0
+        while gulp(seq1, i, 3) != gulp(seq2, i, 3):
+            i += 1
+        #print i
 
-j = 0
-while gulp(seq1[::-1], j, 3) != gulp(seq2[::-1], j, 3):
-    j += 1
-#print i
-newseq1 = seq1[i:(len(seq1)-j)]
-newseq2 = seq2[i:(len(seq2)-j)]
+        j = 0
+        while gulp(seq1[::-1], j, 3) != gulp(seq2[::-1], j, 3):
+            j += 1
+        #print i
+        newseq1 = seq1[i:(len(seq1)-j)]
+        newseq2 = seq2[i:(len(seq2)-j)]
 
-compstr = ''
-for i, (res1, res2) in enumerate(zip(newseq1, newseq2)):
-    if (res1 == '-' or res2 == '-') or res1 == res2:
-         compstr += str(0)
-    elif res1 != res2:
-        compstr += str(1)
-    else:
-        pass
+        compstr = ''
+        for i, (res1, res2) in enumerate(zip(newseq1, newseq2)):
+            if (res1 == '-' or res2 == '-') or res1 == res2:
+                compstr += str(0)
+            elif res1 != res2:
+                compstr += str(1)
+            else:
+                pass
 
-zlist = []
-for s,e in get_indices(compstr):
-    try:
-        zlist.append(calc_zscore(compstr, s, e, window_size))
-    except(ValueError,IndexError):
-        pass
+        zlist = []
+        for s,e in get_indices(compstr):
+            try:
+                zlist.append(calc_zscore(compstr, s, e, window_size))
+            except(ValueError,IndexError):
+                pass
 
-mean = calc_mean(zlist)
-stddev = 3 * (calc_stddev(zlist, mean))
-print stddev
-stddevlist = []
+        mean = calc_mean(zlist)
+        stddev2 = 2 * (calc_stddev(zlist, mean))
+        stddev3 = 3 * (calc_stddev(zlist, mean))
+        #print stddev
+        stddevlist2 = []
+        stddevlist3 = []
 
-for i in range(len(zlist)):
-    stddevlist.append(stddev)
-#print zlist
-pylab.plot([z for z in zlist])
-pylab.plot([stddev for stddev in stddevlist])
-pylab.show()
+        for i in range(len(zlist)):
+            stddevlist2.append(stddev2)
+            stddevlist3.append(stddev3)
+
+        pylab.plot([z for z in zlist])
+        pylab.plot([stddev for stddev in stddevlist2])
+        pylab.plot([stddev for stddev in stddevlist3])
+        pylab.savefig('%s.pdf' % (name))
+        pylab.close()
