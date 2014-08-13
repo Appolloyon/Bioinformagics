@@ -22,14 +22,13 @@ def nonblank_lines(f):
         if line:
             yield line
 
-def calc_zscore(string, start, end, window_size, mean):
+def calc_zscore(string, start, end, window_size):
     chars = string[start:end]
     sum = 0.0
-    m = mean
     w = window_size
     for char in chars:
         sum += float(char)
-    zscore = float((sum - (w*m))/((w*m*(1-m))**0.5))
+    zscore = float((sum/w)*100)
     return zscore
 
 def get_indices(string):
@@ -50,13 +49,23 @@ def gulp(string, start, gulp_size):
         gulpstr += char
     return gulpstr
 
-def calc_mean(string):
+def calc_mean(zlist):
     sum = 0.0
-    for d in string:
+    for d in zlist:
         d = float(d)
         sum += d
-    mean = sum/(float(len(string)))
+    mean = sum/(float(len(zlist)))
     return mean
+
+def calc_stddev(zlist, mean):
+    sum = 0.0
+    m = mean
+    for z in zlist:
+        v = float(z)
+        v2 = ((v - m)**2)
+        sum += v2
+    stddev = ((sum/float(len(zlist)))**0.5)
+    return stddev
 
 for file in file_list:
     with open(file,'U') as f:
@@ -72,7 +81,6 @@ for file in file_list:
 
 index = 1
 for k in seqdict.keys():
-    print k
     try:
         exec("seq%d = '%s'" % (index, seqdict.get(k)))
     except(ValueError,IndexError):
@@ -100,15 +108,21 @@ for i, (res1, res2) in enumerate(zip(newseq1, newseq2)):
     else:
         pass
 
-mean = calc_mean(compstr)
-
 zlist = []
 for s,e in get_indices(compstr):
     try:
-        zlist.append(calc_zscore(compstr, s, e, window_size, mean))
+        zlist.append(calc_zscore(compstr, s, e, window_size))
     except(ValueError,IndexError):
         pass
 
+mean = calc_mean(zlist)
+stddev = 3 * (calc_stddev(zlist, mean))
+print stddev
+stddevlist = []
+
+for i in range(len(zlist)):
+    stddevlist.append(stddev)
 #print zlist
 pylab.plot([z for z in zlist])
+pylab.plot([stddev for stddev in stddevlist])
 pylab.show()
