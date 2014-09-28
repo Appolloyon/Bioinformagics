@@ -41,6 +41,18 @@ def split_input(string, chunk_size):
         output.append(string[chunk_size*i:chunk_size*(i+1)])
     return output
 
-def translate(string):
+def translate(string, aa_dict):
     """translates a given nucleotide sequence into protein"""
+    aa_string = ''
+    codon_list = []
+    codon_num = len(string)/3
+    if (len(string) % 3 != 0:
+        codon_num += 1
+    for i in range(0, codon_num):
+        codon_list.append([string[3*i:3*(i+1)])
+    for codon in codon_list:
+        for k in aa_dict:
+            if codon in aa_dict.get(k):
+                aa_string += k
+    return aa_string
 
