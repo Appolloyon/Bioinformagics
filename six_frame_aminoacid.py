@@ -1,7 +1,21 @@
 #!/usr/bin/env python
 
-import re
 import sys
+
+usage="""
+six_frame_translation.py is a script for translating a series of FASTA
+formatted nucleotide sequences into amino acid sequences in every possible
+reading frame.  The codon table used is the standard one, but this can
+easily be changed by pasting in a different table.
+
+usage: six_frame_translate.py {file to translate}
+
+Creates six output files, each with every sequence translated in that frame.
+Frame4 is minus frame 1, frame5 is minus frame2, and frame6 is minus frame3.
+
+Created: September 26, 2014
+Last Updated: September 29, 2014
+"""
 
 aa_dict = {
         'F':['TTT','TTC'],
@@ -54,6 +68,7 @@ def translate(string, aa_dict=aa_dict):
     return aa_string
 
 def complement(string):
+    """minus frames require reverse complementation"""
     compstr = ''
     for nuc in string:
         if nuc == 'A':
@@ -85,6 +100,7 @@ with open(infile, 'U') as f:
     out1 = basename + "_frame1.fa"
     out2 = basename + "_frame2.fa"
     out3 = basename + "_frame3.fa"
+    #frames higher than 3 are minus reading frames
     out4 = basename + "_frame4.fa"
     out5 = basename + "_frame5.fa"
     out6 = basename + "_frame6.fa"
@@ -95,6 +111,7 @@ with open(infile, 'U') as f:
             s1 = seqdict.get(k).upper()
             s2 = s1[1:len(s1)]
             s3 = s1[2:len(s1)]
+            #minus frames require reverse complementation
             s4 = complement(s1[::-1])
             s5 = s4[1:len(s4)]
             s6 = s4[2:len(s4)]
