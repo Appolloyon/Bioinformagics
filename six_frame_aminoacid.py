@@ -47,20 +47,24 @@ def translate(string, aa_dict=aa_dict):
         codon_num += 1
     for i in range(0, codon_num):
         codon_list.append(string[3*i:3*(i+1)])
-    print codon_list
     for codon in codon_list:
-        print codon
         for k in aa_dict.keys():
             if codon in aa_dict.get(k):
-                print "key: %s" % k
                 aa_string += k
-                print aa_string
-    keys = aa_dict.keys()
-    print ";eys: %s" % keys
-    print len(keys)
-    print aa_dict.get('R')
-    print aa_dict['R']
     return aa_string
+
+def complement(string):
+    compstr = ''
+    for nuc in string:
+        if nuc == 'A':
+            compstr += 'T'
+        elif nuc == 'T':
+            compstr += 'A'
+        elif nuc == 'C':
+            compstr += 'G'
+        else:
+            compstr += 'C'
+    return compstr
 
 
 infile = sys.argv[1]
@@ -78,34 +82,50 @@ with open(infile, 'U') as f:
 
     name_list = infile.split('.')
     basename = name_list[0]
-    outfile_1 = basename + "_frame1.fa"
-    outfile_2 = basename + "_frame2.fa"
-    outfile_3 = basename + "_frame3.fa"
+    out1 = basename + "_frame1.fa"
+    out2 = basename + "_frame2.fa"
+    out3 = basename + "_frame3.fa"
+    out4 = basename + "_frame4.fa"
+    out5 = basename + "_frame5.fa"
+    out6 = basename + "_frame6.fa"
 
-    with open(outfile_1, 'w') as o1, open(outfile_2, 'w') as o2,\
-            open(outfile_3, 'w') as o3:
+    with open(out1, 'w') as o1, open(out2, 'w') as o2, open(out3, 'w') as o3,\
+        open(out4, 'w') as o4, open(out5, 'w') as o5, open(out6, 'w') as o6:
         for k in seqdict:
             s1 = seqdict.get(k).upper()
-            print s1
-            s2 = seqdict.get(k).upper()
-            s2 = s2[1:len(s2)]
-            print s2
-            s3 = seqdict.get(k).upper()
-            s3 = s3[2:len(s3)]
-            print s3
+            s2 = s1[1:len(s1)]
+            s3 = s1[2:len(s1)]
+            s4 = complement(s1[::-1])
+            s5 = s4[1:len(s4)]
+            s6 = s4[2:len(s4)]
 
-            aa_1 = translate(s1)
-            aa_2 = translate(s2)
-            aa_3 = translate(s3)
+            aa1 = translate(s1)
+            aa2 = translate(s2)
+            aa3 = translate(s3)
+            aa4 = translate(s4)
+            aa5 = translate(s5)
+            aa6 = translate(s6)
 
             o1.write(">" + k + "_frame1" + "\n")
-            for chunk in split_input(aa_1, 80):
+            for chunk in split_input(aa1, 80):
                 o1.write(chunk + "\n")
 
             o2.write(">" + k + "_frame2" + "\n")
-            for chunk in split_input(aa_2, 80):
+            for chunk in split_input(aa2, 80):
                 o2.write(chunk + "\n")
 
             o3.write(">" + k + "_frame3" + "\n")
-            for chunk in split_input(aa_3, 80):
+            for chunk in split_input(aa3, 80):
                 o3.write(chunk + "\n")
+
+            o4.write(">" + k + "_frame4" + "\n")
+            for chunk in split_input(aa4, 80):
+                o4.write(chunk + "\n")
+
+            o5.write(">" + k + "_frame5" + "\n")
+            for chunk in split_input(aa5, 80):
+                o5.write(chunk + "\n")
+
+            o6.write(">" + k + "_frame6" + "\n")
+            for chunk in split_input(aa6, 80):
+                o6.write(chunk + "\n")
