@@ -6,9 +6,13 @@ import sys
 class Seq(object):
     """Class string documentation"""
 
-    aa_index = 0
-    nuc_index = 0
-    aa_dict = {
+    def __init__(self, seq1, seq2, name):
+        self.name = name
+        self.nuc_seq = seq1
+        self.aa_seq = seq2
+        self.aa_index = 0
+        self.nuc_index = 0
+        self.aa_dict = {
             'F':{'TTT':0,'TTC':0},
             'L':{'TTA':0,'TTG':0,'CTT':0,'CTC':0,'CTA':0,'CTG':0},
             'I':{'ATT':0,'ATC':0,'ATA':0},
@@ -31,51 +35,59 @@ class Seq(object):
             'G':{'GGT':0,'GGC':0,'GGA':0,'GGG':0},
             }
 
-
-    def __init__(self, seq1, seq2):
-        self.nuc_seq = seq1
-        self.aa_seq = seq2
+    def aa_length(self):
+        return len(self.aa_seq)
 
     def index_aa(self):
-        return aa_index
+        return self.aa_index
 
     def incr_aa(self):
-        aa_index += 1
+        self.aa_index += 1
 
     def index_nuc(self):
-        return nuc_index
+        return self.nuc_index
 
     def incr_nuc(self):
-        nuc_index += 3
+        self.nuc_index += 3
 
-	def lookup_aa(self, i=aa_index, seq=aa_seq):
-        for i, n in enumerate(seq):
-            return n
+    def lookup_aa(self):
+        return self.aa_seq[self.index_aa()]
 
-    def lookup_nuc(self, i=nuc_index, seq=nuc_seq):
-        for i, n in enumerate(seq):
-            return [n:n+3]
+    def lookup_nuc(self):
+        return self.nuc_seq[self.index_nuc():(self.index_nuc()+3)]
 
-	def check_codon(self):
-        for codon in lookup_nuc(index_nuc):
-            return codon
+    #def check_codon(self):
+    #    for codon in self.lookup_nuc():
+    #        return codon
 
-	def update_codons(self):
-		pass
+    def update_codons(self):
+        codon = self.lookup_nuc()
+        print codon
+        for k1 in self.aa_dict.keys():
+            for k2 in self.aa_dict[k1].keys():
+                if k2 == codon:
+                    self.aa_dict[k1][k2] += 1
+
 
 def all_equal(l):
-    c = 0
-    for c,c+1 in l:
-        if lookup_aa(c) == lookup_aa(c+1):
-            c += 1
-            pass
+    prev = ''
+    counter = 0
+    for obj in l:
+        cur = obj.lookup_aa()
+        if counter == 0:
+            prev = cur
+            counter += 1
         else:
-            assert False
+            if cur == prev:
+                pass
+            else:
+                return False
     return True
 
 
 nuc_file = sys.argv[1]
 prot_file = sys.argv[2]
+outfile = "howe_project_test.txt"
 
 with open(nuc_file, 'U') as f1, open(prot_file, 'U') as f2:
     nuc_dict = {}
@@ -89,7 +101,7 @@ with open(nuc_file, 'U') as f1, open(prot_file, 'U') as f2:
             curline = curline.strip("\n")
             nuc_dict[ID] += curline
 
-     for curline in f2:
+    for curline in f2:
         if curline.startswith(">"):
             curline = curline.strip(">").strip("\n")
             ID = curline
@@ -99,13 +111,20 @@ with open(nuc_file, 'U') as f1, open(prot_file, 'U') as f2:
             prot_dict[ID] += curline
 
     obj_list = []
-    for a,b in enumerate(nuc_dict.keys(), prot_dict.keys()):
-        if re.search(a, b):
-            obj_list.append(Seq(nuc_dict.get(a), prot_dict.get(b))
+    for a,b in zip(nuc_dict.keys(), prot_dict.keys()):
+        print a
+        print b
+        if a == b:
+            print a
+            print b
+            obj_list.append(Seq(nuc_dict.get(a), prot_dict.get(b), a))
         else:
             pass
 
-    num = len(obj_list[0].aa_seq)
+    print obj_list
+
+    num = obj_list[0].aa_length()
+    print num
     reps = 0
     while reps < num:
         if all_equal(obj_list):
@@ -114,11 +133,22 @@ with open(nuc_file, 'U') as f1, open(prot_file, 'U') as f2:
                 obj.incr_aa()
                 obj.incr_nuc()
         else:
-            if obj.lookup_aa() == '-':
-                obj.incr_aa()
-            else:
-                obj.incr_aa()
-                obj.incr_nuc()
+            for obj in obj_list:
+                if obj.lookup_aa() == '-':
+                    obj.incr_aa()
+                else:
+                    obj.incr_aa()
+                    obj.incr_nuc()
+        reps += 1
+
+with open(outfile, 'w') as o:
+    for obj in obj_list:
+        o.write(obj.name + "\n")
+        for k1 in obj.aa_dict:
+            o.write(k1 + "\n")
+            for k2 in obj.aa_dict[k1].keys():
+                o.write("\t" + k2 + ":" + str(obj.aa_dict[k1][k2]) + "\n")
+        o.write("\n")
 
 """
 read in aligned nucleotide and protein seq files
