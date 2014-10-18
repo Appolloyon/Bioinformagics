@@ -4,14 +4,14 @@ import re
 import sys
 
 class Seq(object):
-    """Class string documentation"""
+    """Class to model nucleotide/protein sequence pairs"""
 
     def __init__(self, seq1, seq2, name):
         self.name = name
         self.nuc_seq = seq1
         self.aa_seq = seq2
-        self.aa_index = 0
-        self.nuc_index = 0
+        self.aa_index = 0  #initialize counter for index in aa sequence
+        self.nuc_index = 0  #separate counter for nuc sequence
         self.aa_dict = {
             'F':{'TTT':0,'TTC':0},
             'L':{'TTA':0,'TTG':0,'CTT':0,'CTC':0,'CTA':0,'CTG':0},
@@ -54,6 +54,7 @@ class Seq(object):
         return self.aa_seq[self.index_aa()]
 
     def lookup_nuc(self):
+        """returns nucleotide index as a codon"""
         return self.nuc_seq[self.index_nuc():(self.index_nuc()+3)]
 
     #def check_codon(self):
@@ -61,8 +62,9 @@ class Seq(object):
     #        return codon
 
     def update_codons(self):
+        """updates dict based on codon retrieved"""
         codon = self.lookup_nuc()
-        print codon
+        #print codon
         for k1 in self.aa_dict.keys():
             for k2 in self.aa_dict[k1].keys():
                 if k2 == codon:
@@ -70,10 +72,12 @@ class Seq(object):
 
 
 def all_equal(l):
+    """each time it is called, compares all amino acids in a given column of
+    the alignment, returns True if all are equal"""
     prev = ''
-    counter = 0
+    counter = 0  #need to know if object is first looked at
     for obj in l:
-        cur = obj.lookup_aa()
+        cur = obj.lookup_aa()  #get the current amino acid
         if counter == 0:
             prev = cur
             counter += 1
@@ -81,7 +85,7 @@ def all_equal(l):
             if cur == prev:
                 pass
             else:
-                return False
+                return False  #only True if all amino acids are equal
     return True
 
 
@@ -112,21 +116,16 @@ with open(nuc_file, 'U') as f1, open(prot_file, 'U') as f2:
 
     obj_list = []
     for a,b in zip(nuc_dict.keys(), prot_dict.keys()):
-        print a
-        print b
         if a == b:
-            print a
-            print b
+            #creates an object only when same organism
             obj_list.append(Seq(nuc_dict.get(a), prot_dict.get(b), a))
         else:
             pass
 
-    print obj_list
-
-    num = obj_list[0].aa_length()
-    print num
+    num = obj_list[0].aa_length()  #determine number of aa's in alignment
+    #print num
     reps = 0
-    while reps < num:
+    while reps < num:  #need to go through each position
         if all_equal(obj_list):
             for obj in obj_list:
                 obj.update_codons()
@@ -135,7 +134,7 @@ with open(nuc_file, 'U') as f1, open(prot_file, 'U') as f2:
         else:
             for obj in obj_list:
                 if obj.lookup_aa() == '-':
-                    obj.incr_aa()
+                    obj.incr_aa()  #only increase nuc index if aa present
                 else:
                     obj.incr_aa()
                     obj.incr_nuc()
@@ -146,8 +145,8 @@ with open(outfile, 'w') as o:
         o.write(obj.name + "\n")
         for k1 in obj.aa_dict:
             o.write(k1 + "\n")
-            for k2 in obj.aa_dict[k1].keys():
-                o.write("\t" + k2 + ":" + str(obj.aa_dict[k1][k2]) + "\n")
+            for k2 in obj.aa_dict[k1].keys():  #write aa
+                o.write("\t" + k2 + ":" + str(obj.aa_dict[k1][k2]) + "\n")  #write codon usage
         o.write("\n")
 
 """
