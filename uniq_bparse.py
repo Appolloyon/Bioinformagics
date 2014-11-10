@@ -19,18 +19,9 @@ import sys
 import os
 from operator import itemgetter
 
-def comp_hits(pair):
-    hit1 = pair[0]
-    hit2 = pair[1]
-    if hit1[1] == hit2[1]:
-        if hit1[2] < hit2[2]:
-            return hit1
-        else:
-            return hit2
-
 infiles = sys.argv[1:]
 for infile in infiles:
-    outfile = os.path.splitext(infile)[0]
+    outfile = os.path.splitext(infile)[0]  #remove extension only
     outfile = outfile + "_uniq.csv"
 
     with open(infile, 'U') as f, open(outfile, 'w') as o:
@@ -39,18 +30,18 @@ for infile in infiles:
             llist = line.split(',')
             Qacc = llist[0]
             Sacc = llist[1]
-            Eval = float(llist[2])
+            Eval = float(llist[2])  #can't sort strings later on
             L1.append([Qacc, Sacc, Eval])
 
-        L2 = sorted(L1, key = itemgetter(2))
+        L2 = sorted(L1, key = itemgetter(2))  #sorts based on E value
         test = set()
         L3 = []
         for x in L2:
-            if x[1] in test:
+            if x[1] in test:  #have we seen a better hit before?
                 pass
             else:
-                test.add(x[1])
-                L3.append(x)
+                test.add(x[1])  #first time, so add to test
+                L3.append(x)  #best hit, so add to L3
         #print test
         #print L3
 

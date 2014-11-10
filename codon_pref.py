@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import re
+#import re
 import sys
 
 class Seq(object):
@@ -57,10 +57,6 @@ class Seq(object):
         """returns nucleotide index as a codon"""
         return self.nuc_seq[self.index_nuc():(self.index_nuc()+3)]
 
-    #def check_codon(self):
-    #    for codon in self.lookup_nuc():
-    #        return codon
-
     def update_codons(self):
         """updates dict based on codon retrieved"""
         codon = self.lookup_nuc()
@@ -86,12 +82,13 @@ def all_equal(l):
                 pass
             else:
                 return False  #only True if all amino acids are equal
+    #print prev
     return True
 
 
 nuc_file = sys.argv[1]
 prot_file = sys.argv[2]
-outfile = "howe_project_test.txt"
+outfile = "howe_project_test_v3.txt"
 
 with open(nuc_file, 'U') as f1, open(prot_file, 'U') as f2:
     nuc_dict = {}
