@@ -1,35 +1,37 @@
 #!/usr/bin/env python
 
-Usage="""
-
-This program is the most recent version of the python-based script to retrieve
-Fasta sequences automatically. It assumes a directory structure for genome
-files with a top level, directories for each organisms named the same as the
-files in the input stream (i.e. both files need at least one instance of the
-same substring, e.g. for Homo sapiens, both should have 'Hsapiens' or 'Hsap'
-or something along those lines). Within each of these directories, files should
-be present for each genome, nucleotide files should have '_Genome' somewhere
-in their name, and '_Prot' for protein files, and must be Fasta formatted.
-Additionally, input files must contain one accession on each line.
-
-Usage: Get_Any_Fasta.py {-P/-N} (files to parse)
--P specifies protein
--N specifies nucleotide
-files to parse is a list of files, use Bash file globbing for many files
-
-Note: this program requires BioPython to be installed.
-
+"""
+Changelog
+---------
 Author: Christen Klinger
-Last updated: August 25, 2014
+Last updated: November 11, 2014
 """
 
 #change this to directory with genomes
 dir_string="/Users/cklinger/Documents/Genomes_new_2014"
 
-from Bio import SeqIO
-import sys
 import re
 import os
+import sys
+import argparse
+
+from Bio import SeqIO
+
+parser = argparse.ArgumentParser(
+    description = """Gets FASTA sequences for a list of accessions.""",
+    epilog = """This program assumes a directory structure for genome
+    files with a top level and directories for each organism named as
+    per input files (i.e. both files need at least one instance of the
+    same substring, e.g. Hsapiens or Hsap).  Within these directories
+    nucleotide files should have '_Genome' somewhere in their name,
+    and protein files '_Prot'.""")
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-p', '--protein', action='store_true',
+                    help='specify protein')
+group.add_argument('-n', '--nucleotide', action='store_true',
+                    help='specify nucleotide')
+parser.add_argument('infiles', nargs='+', help='list of infiles')
+args = parser.parse_args()
 
 def determine_split(query_string):
     if re.search('|',query_string):
@@ -56,21 +58,12 @@ def get_fasta_file(subdir, search_str):
             fasta_file = os.path.join((os.path.join(dir_string, subdir)), f)
             return fasta_file
 
-if len(sys.argv) < 2:
-    print Usage
-    sys.exit(1)
-else:
-    file_list = sys.argv[2:]
-
-if sys.argv[1] == "-P":
+if args.protein:
     search_str = "_Prot"
-elif sys.argv[1] == "-N":
+elif args.nucleotide:
     search_str = "_Genome"
-else:
-    print "Please specify nucleotide or protein"
-    sys.exit(1)
 
-for infile in file_list:
+for infile in args.infiles:
     sys.stderr.write("Processing file {}\n".format(infile))
     outfile = infile.strip('.txt')
     outfile = outfile + "_Seqs.fa"

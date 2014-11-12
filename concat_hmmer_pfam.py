@@ -1,9 +1,24 @@
 #!/usr/bin/env python
 
+"""
+Changelog
+---------
+Author: Christen Klinger
+Last Updated: November 12, 2014
+"""
+
 import re
-import os
-import os.path
-import sys
+import argparse
+
+parser = argparse.ArgumentParser(
+    description = """Writes csv file combining HMMer and Pfam output""",
+    epilog = """This program assumes already parsed data for HMMer and
+    Pfam output (as csv files using pfam_parse.py and hmm_parse.py).
+    It will extract the information from each accession and write out
+    all relevant pieces on each line before moving to a new line.""")
+parser.add_argument('-m', '--hmmer', help='HMMer result file')
+parser.add_argument('-p', '--pfam', help='Pfam result file')
+args = parser.parse_args()
 
 def ExtractAccession(QueryString): #removes just the accession from the hit column
 	SearchStr1='\Agi.+'
@@ -63,8 +78,8 @@ def nonblank_lines(f):
 		if line:
 			yield line
 
-HFile = sys.argv[1]
-PFile = sys.argv[2]
+HFile = args.hmmer
+PFile = args.pfam
 
 with open(HFile, 'r') as f1:
 	HList=[]
