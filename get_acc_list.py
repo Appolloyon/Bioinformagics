@@ -1,23 +1,30 @@
 #!/usr/bin/env python
 
-Usage="""
-New_Get_Acc_List.py
-Intended to be used in conjunction with pyGetFasta.py, this program
-will take any file with accessions in the X position of each line
-and return a separate file with just the accessions, one per line.
-
-Usage: New_Get_Acc_List.py '-X' '-Y' 'files to parse'
-
-where -X is the column number with accessions, and -Y is the number
-of lines to skip (header; default should be 0)
-
+"""
+Changelog
+---------
 Author: Christen Klinger
-Last Modified: October 28, 2014
+Last Updated: November 13, 2014
 """
 
 import os
 import re
 import sys
+import argparse
+
+parser = argparse.ArgumentParser(
+    description = """Obtains just the accessions from tabular output.""",
+    epilog = """This program takes tabular input and retrieves just the
+    accessions from each line. Options allow users to skip header lines
+    and specify which column to use for getting the accessions.""")
+parser.add_argument('-c', '--column', type=int,
+                    help='specify column with accession')
+parser.add_argument('-d', '--header', type=int, default=0,
+                    help='specify number of header lines to skip')
+parser.add_argument('-o', '--output', type=int, default=4,
+                    help='number of infile name sections to keep')
+parser.add_argument('infiles', nargs='+', help='list of infiles')
+args = parser.parse_args()
 
 def ExtractAccession(QueryString): #removes just the accession from the hit column
 	SearchStr1='\Agi.+'
@@ -71,50 +78,43 @@ def ExtractAccession(QueryString): #removes just the accession from the hit colu
 	else:
 		return QueryString
 
-def get_col_num(ColumnNum):
-	ColNum = int((re.search('(-)(.+)', ColumnNum)).group(2))
-	return ColNum
 
+col_num = args.column
+num_skips = args.header
+out_skips = args.output
+file_list = args.infiles
 
-if len(sys.argv) < 2:
-	print Usage
-	sys.exit(1) #exits without traceback if no args given
-else:
-    ColumnNum = sys.argv[1]
-    NumSkips = get_col_num(sys.argv[2])
-    FileList = sys.argv[3:] #list of args to loop over
+for infile in file_list:
+	sys.stderr.write("Processing file %s\n" % (infile))
 
-for InFileName in FileList:
-	sys.stderr.write("Processing file %s\n" % (InFileName))
+file_num=0
 
-FileNum=0
+for infile in file_list:
+    infile_info = os.stat(infile)
+    infile_size = infile_info.st_size
+    if infile_size != 0:
+        outlist = (infile.split('_'))[0:out_skips]
+        outname = ''
+        for e in outlist:
+            outname += (e + '_')
+        outfile = outname + "Acc.txt"
 
-for InFileName in FileList:
-	InFileInfo = os.stat(InFileName)
-	InFileSize = InFileInfo.st_size
-	if InFileSize != 0: #don't bother reading empty files
+        with open(infile, 'U') as i, open(outfile, 'w') as o:
+            linenum = 1
+            for line in i:
+                if linenum > num_skips:
+                    line=line.strip('\n')
+                    element_list=line.split()
 
-		OutName = os.path.splitext(InFileName)[0]
-		OutName = OutName + "_Acc.txt"
-
-        with open(InFileName, 'U') as I, open(OutName, 'w') as o:
-            LineNum = 1
-            for Line in I:
-                if LineNum > NumSkips:
-                    Line=Line.strip('\n')
-                    ElementList=Line.split()
-
-                    col_num = get_col_num(ColumnNum)
-                    OutAcc = ExtractAccession(ElementList[(col_num - 1)])
+                    outacc = ExtractAccession(element_list[(col_num - 1)])
                     #print OutAcc
 
-                    OutString = "%s" % (OutAcc)
-                    o.write(OutString)
-                    o.write('\n')
-                LineNum += 1
-            FileNum += 1
+                    outstring = "%s" % (outacc)
+                    o.write(outstring + '\n')
+                linenum += 1
+            file_num += 1
 
-sys.stderr.write("Finished processing %s files\n" % (FileNum))
+sys.stderr.write("Finished processing %s files\n" % (file_num))
 
 """
 Changelog:
