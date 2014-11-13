@@ -16,7 +16,9 @@ parser = argparse.ArgumentParser(
     Pfam output (as csv files using pfam_parse.py and hmm_parse.py).
     It will extract the information from each accession and write out
     all relevant pieces on each line before moving to a new line.""")
-parser.add_argument('-m', '--hmmer', help='HMMer result file')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-m', '--hmmer', help='HMMer result file')
+group.add_argument('-b', '--blast', help='BLAST result file')
 parser.add_argument('-p', '--pfam', help='Pfam result file')
 args = parser.parse_args()
 
@@ -78,23 +80,38 @@ def nonblank_lines(f):
 		if line:
 			yield line
 
-HFile = args.hmmer
+if args.hmmer:
+    HFile = args.hmmer
+elif args.blast:
+    BFile = args.blast
 PFile = args.pfam
 
-with open(HFile, 'r') as f1:
-	HList=[]
-	for line in nonblank_lines(f1):
-#		print line
-		Hlist = line.split(',')
-#		print Hlist
-		try:
-			HAcc = ExtractAccession(Hlist[0])
-			HEvalue = float(Hlist[1])
-		except(IndexError):
-			pass
-
-		HList.append([HAcc,HEvalue])
-#	print HList
+if args.hmmer:
+    with open(HFile, 'r') as f1:
+        HList=[]
+        for line in nonblank_lines(f1):
+            print line
+            Hlist = line.split(',')
+            #print Hlist
+            try:
+                HAcc = ExtractAccession(Hlist[0])
+                HEvalue = float(Hlist[1])
+            except(IndexError):
+                pass
+            HList.append([HAcc,HEvalue])
+            print HList
+elif args.blast:
+    with open(BFile, 'r') as f3:
+        BList=[]
+        for line in nonblank_lines(f3):
+            Blist = line.split(',')
+            try:
+                QAcc = ExtractAccession(Blist[0])
+                BAcc = ExtractAccession(Blist[1])
+                BEvalue = float(Blist[2])
+            except(IndexError):
+                pass
+            BList.append([QAcc,BAcc,BEvalue])
 
 with open(PFile, 'r') as f2:
 	PDict={}
@@ -126,16 +143,26 @@ with open(PFile, 'r') as f2:
 		else:
 			PDict[PAcc] += [AStart,AEnd,EStart,EEnd,PfamID,Name,Type,PEvalue]
 		prev_line2 = current_line2
-#	print PDict
+#print PDict
 
 with open("Out.csv",'w') as O:
-	for HA,HE in HList:
-		O.write("%s,%s," % (HA,HE))
-		try:
-			for v in PDict.get(HA):
-				O.write("%s," % (v))
-		except(TypeError):
-			pass
-		O.write('\n')
+    if args.hmmer:
+        for HA,HE in HList:
+            O.write("%s,%s," % (HA,HE))
+            try:
+                for v in PDict.get(HA):
+                    O.write("%s," % (v))
+            except(TypeError):
+                pass
+            O.write('\n')
+    elif args.blast:
+        for QA,BA,BE in BList:
+            O.write("%s,%s,%s," % (QA,BA,BE))
+            try:
+                for v in PDict.get(BA):
+                    O.write("%s," % (v))
+            except(TypeError):
+                pass
+            O.write('\n')
 
 
