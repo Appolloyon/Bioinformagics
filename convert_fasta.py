@@ -1,8 +1,22 @@
 #!/usr/bin/env python
 
-import os
-import re
-import sys
+"""
+Changelog
+---------
+Author: Christen Klinger
+Last updated: November 12, 2014
+"""
+
+import argparse
+
+parser = argparse.ArgumentParser(
+    description = """Formats sequence files in FASTA format.""",
+    epilog = """This program is intended to ensure proper formatting of
+    FASTA sequence files, namely that sequences should not exceed 80
+    characters per line. Input files are read in and written to an
+    output file with proper formatting.""")
+parser.add_argument('infiles', nargs='+', help='list of infiles')
+args = parser.parse_args()
 
 def split_input(string, chunk_size):
 	num_chunks = len(string)/chunk_size
@@ -13,14 +27,13 @@ def split_input(string, chunk_size):
 		output.append(string[chunk_size*i:chunk_size*(i+1)])
 	return output
 
-InFileList = sys.argv[1:]
 
-for File in InFileList:
-	NameList = File.split('.')
+for file in args.infiles:
+	NameList = file.split('.')
 	Basename = NameList[0]
 	OutFile = Basename +'_out.fa'
 	with open(OutFile, 'w') as o:
-		with open(File, 'r') as f:
+		with open(file, 'r') as f:
 			for line in f:
 				line = line.strip()
 				if line[0] == '>':
