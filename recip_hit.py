@@ -46,6 +46,7 @@ Author: Christen Klinger
 Last Updated: February 12, 2015
 """
 
+import re
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -65,6 +66,8 @@ with open(args.forward, 'U') as i1:
     hit_dict = {}
     prev_line1 = ''
     for current_line1 in i1:
+        print "current line:" +  current_line1
+        print "previous line:" +  prev_line1
         current_list1 = current_line1.strip('\n').split('\t')
         try:
             prev_list1 = prev_line1.strip('\n').split('\t')
@@ -77,14 +80,14 @@ with open(args.forward, 'U') as i1:
             fhit = current_list1[1]
             feval = current_list1[2]
 
-        if facc not in hit_dict.keys():
-            hit_dict[facc] = []
-            hit_dict[facc].append([fhit, feval])
-        else:
-            hit_dict[facc].append([fhit, feval])
+            if facc not in hit_dict.keys():
+                hit_dict[facc] = []
+                hit_dict[facc].append([fhit, feval])
+            else:
+                hit_dict[facc].append([fhit, feval])
         prev_line1 = current_line1
 
-#print hit_dict
+print hit_dict
 #print hit_dict.keys()
 
 with open(args.reverse, 'U') as i2:
@@ -99,7 +102,7 @@ with open(args.reverse, 'U') as i2:
         if current_list2[0] == prev_list2[0]:
             pass
         else:
-            print current_list2
+            #print current_list2
             if current_list2[1] in hit_dict.keys():
                 rhit = current_list2[0]
                 qacc = current_list2[1]
