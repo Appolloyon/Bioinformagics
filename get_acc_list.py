@@ -8,9 +8,9 @@ Last Updated: November 13, 2014
 """
 
 import os
-import re
 import sys
 import argparse
+from functions import extractacc
 
 parser = argparse.ArgumentParser(
     description = """Obtains just the accessions from tabular output.""",
@@ -23,61 +23,10 @@ parser.add_argument('-d', '--header', type=int, default=0,
                     help='specify number of header lines to skip')
 parser.add_argument('-o', '--output', type=int, default=4,
                     help='number of infile name sections to keep')
+parser.add_argument('-s', '--split', action="store_true",
+                    help="true if delimiter is a comma")
 parser.add_argument('infiles', nargs='+', help='list of infiles')
 args = parser.parse_args()
-
-def ExtractAccession(QueryString): #removes just the accession from the hit column
-	SearchStr1='\Agi.+'
-	SearchStr2='\Ajgi.+'
-	SearchStr3='\AsymbB.+'
-	SearchStr4='\AContig.+'
-	SearchStr5='\ATTHERM.+'
-	SearchStr6='\AIMG.+'
-	SearchStr7='\Atr.+'
-	SearchStr8='\Aprei.+'
-	SearchStr9='\Apult.+'
-	SearchStr10='\Acrei.+'
-
-	if re.search(SearchStr1, QueryString):
-		try:
-			StringList1 = QueryString.split('|')
-			#print StringList1 #uncomment for debugging
-			return StringList1[3]
-		except AttributeError:
-			return QueryString
-	elif re.search(SearchStr2, QueryString):
-		try:
-			StringList2 = QueryString.split('|')
-			#print StringList2
-			return StringList2[2]
-		except AttributeError:
-			return QueryString
-	elif re.search(SearchStr3, QueryString) or re.search(SearchStr4, QueryString):
-		try:
-			StringList3 = QueryString.split('|')
-			#print StringList3
-			return StringList3[0]
-		except AttributeError:
-			return QueryString
-	elif re.search(SearchStr5, QueryString) or re.search(SearchStr6, QueryString):
-		try:
-			ResultStr='(\w+_\d+)#\w+'
-			ResultSearch = re.search(ResultStr, QueryString)
-			Result = ResultSearch.group(1)
-			return Result
-		except AttributeError:
-			return QueryString
-	elif re.search(SearchStr7, QueryString) or re.search(SearchStr8, QueryString)\
-	or re.search(SearchStr9, QueryString) or re.search(SearchStr10, QueryString):
-		try:
-			StringList4 = QueryString.split('|')
-			#print StringList4
-			return StringList4[1]
-		except:
-			return QueryString
-	else:
-		return QueryString
-
 
 col_num = args.column
 num_skips = args.header
@@ -103,14 +52,20 @@ for infile in file_list:
             linenum = 1
             for line in i:
                 if linenum > num_skips:
-                    line=line.strip('\n')
-                    element_list=line.split()
+                    try:
+                        line=line.strip('\n')
+                        if args.split:
+                            element_list = line.split(',')
+                        else:
+                            element_list = line.split()
 
-                    outacc = ExtractAccession(element_list[(col_num - 1)])
-                    #print OutAcc
+                        outacc = extractacc(element_list[(col_num - 1)])
+                        #print OutAcc
 
-                    outstring = "%s" % (outacc)
-                    o.write(outstring + '\n')
+                        outstring = "%s" % (outacc)
+                        o.write(outstring + '\n')
+                    except:
+                        pass
                 linenum += 1
             file_num += 1
 
@@ -121,5 +76,7 @@ Changelog:
 28/10/14: Remove .csv extension (expected in input file)
 29/10/14: Strips off any file extension, not specified any longer
           Now uses 'with open' statements, instead of opening and closing manually
+15/01/15: Added an additional command line argument, '-s', that indicates comma
+          separated values; if false, assume tabs or spaces.
 """
 

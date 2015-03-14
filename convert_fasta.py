@@ -8,6 +8,7 @@ Last updated: November 12, 2014
 """
 
 import argparse
+from functions import split_input
 
 parser = argparse.ArgumentParser(
     description = """Formats sequence files in FASTA format.""",
@@ -17,16 +18,6 @@ parser = argparse.ArgumentParser(
     output file with proper formatting.""")
 parser.add_argument('infiles', nargs='+', help='list of infiles')
 args = parser.parse_args()
-
-def split_input(string, chunk_size):
-	num_chunks = len(string)/chunk_size
-	if (len(string) % chunk_size != 0):
-		num_chunks += 1
-	output = []
-	for i in range (0, num_chunks):
-		output.append(string[chunk_size*i:chunk_size*(i+1)])
-	return output
-
 
 for file in args.infiles:
 	NameList = file.split('.')
