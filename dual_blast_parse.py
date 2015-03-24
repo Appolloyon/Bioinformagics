@@ -16,7 +16,7 @@ def ExtractAccession(QueryString): #removes just the accession from the hit colu
 	SearchStr8='\Aprei.+'
 	SearchStr9='\Apult.+'
 	SearchStr10='\Acrei.+'
-	
+
 	if re.search(SearchStr1, QueryString):
 		try:
 			StringList1 = QueryString.split('|')
@@ -104,12 +104,12 @@ for File1 in FileList_Forward:
 						FAcc = ExtractAccession(current_list1[0])
 						FHit = ExtractAccession(current_list1[1])
 						FEvalue = float(current_list1[2])
-						
+
 						FList.append([FAcc,FHit,FEvalue])
-						
+
 					prev_line1 = current_line1
 #				print FList
-					
+
 			with open(os.path.join(Reverse_Dir,File2), 'r') as f2:
 					RDict={}
 					AccList=[]
@@ -137,7 +137,7 @@ for File1 in FileList_Forward:
 								RDict[RAcc] += [RHit,REvalue]
 						prev_line2 = current_line2
 #					print RDict
-				
+
 			with open(Out,'w') as O:
 				for NP,PF,FE in FList:
 					O.write("%s,%s,%s," % (NP,PF,FE,))

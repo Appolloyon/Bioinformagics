@@ -24,7 +24,7 @@ def ExtractAccession(QueryString): #removes just the accession from the hit colu
 	SearchStr8='\Aprei.+'
 	SearchStr9='\Apult.+'
 	SearchStr10='\Acrei.+'
-	
+
 	if re.search(SearchStr1, QueryString):
 		try:
 			StringList1 = QueryString.split('|')
@@ -70,8 +70,8 @@ for InFileName in FileList:
 	sys.stderr.write("Processing file %s\n" % (InFileName))
 
 PathList = os.getcwd() #not hardcoded for particular directory
-PathString='.+/(\w+)\Z' 
-PathElement = re.search(PathString, PathList) 
+PathString='.+/(\w+)\Z'
+PathElement = re.search(PathString, PathList)
 PathName = PathElement.group(1) #returns the last folder name
 OutDir = (PathList + '/Sorted')
 

@@ -14,8 +14,7 @@ with open(InFile, 'r') as f:
 		else:
 			curline=curline.strip('\n')
 			seqdict[ID] += curline
-	
-print seqdict
+#print seqdict
 
 for k in seqdict:
 	count = 0

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 import re
 import os
 
@@ -15,7 +14,7 @@ def ExtractAccession(QueryString): #removes just the accession from the hit colu
 	SearchStr8='\Aprei.+'
 	SearchStr9='\Apult.+'
 	SearchStr10='\Acrei.+'
-	
+
 	if re.search(SearchStr1, QueryString):
 		try:
 			StringList1 = QueryString.split('|')
@@ -85,18 +84,11 @@ if not os.path.exists(OutDir):
 	os.makedirs(OutDir)
 
 for File1 in FileList_Seqs:
-#	print File1
 	for File2 in FileList_Doms:
-#		print File2
 		pattern1 = (re.search('(\w+)_(\w+)(.+)',File1).group(1))
-#		print pattern1
 		if re.search(pattern1,File2):
 			pattern2 = (re.search('(\w+)_(\w+)(.+)',File2).group(2))
-#			print pattern2
-#			print File2
 			Out=pattern1 + "_" + pattern2 + ".fa"
-#			print Out
-#			with open(Out1,'w') as O1, open(Out2,'w') as O2:
 			with open(os.path.join(Seq_Dir,File1), 'U') as f1:
 				seqdict={}
 				for line in nonblank_lines(f1):
@@ -107,23 +99,18 @@ for File1 in FileList_Seqs:
 					else:
 						line = line.strip('\n')
 						seqdict[ID] += line
-#				print seqdict
 			with open(os.path.join(Dom_Dir,File2), 'U') as f2:
 				DomList = []
-				for line in f2:
-					line = line.strip('\n').split(',')
-					Acc = ExtractAccession(line[0])
-					Start = line[1]
-					End = line[2]
-					DomList.append([Acc,Start,End])
-#				print DomList
-			with open((os.path.join(OutDir,Out)),'w') as o:
-				for A,S,E in DomList:
-#					print A
-#					print S
-#					print int(S)-6
-#					print E
-#					print int(E)+5
+                for line in f2:
+                    print line
+                    line = line.strip('\n').split(',')
+                    Acc = ExtractAccession(line[0])
+                    Start = line[3]
+                    End = line[4]
+                    DomList.append([Acc,Start,End])
+
+            with open((os.path.join(OutDir,Out)),'w') as o:
+                for A,S,E in DomList:
 					try:
 						dom = seqdict[A][int(S)-6:int(E)+5]
 					except(IndexError):
