@@ -2,6 +2,7 @@
 
 import os
 import argparse
+from functions import extractacc
 
 parser = argparse.ArgumentParser(
     description = "Combines forward and reverse BLAST searches",
@@ -36,11 +37,13 @@ def parseblast(bfile,bdict):
         if curlist[0] == prevlist[0] and curlist[1] == prevlist[1]:
             pass
         else:
-            if curlist[0] not in bdict.keys():
-                bdict[curlist[0]] = []
-                bdict[curlist[0]].append([curlist[1],curlist[2],curlist[3]])
+            qacc = extractacc(curlist[0])
+            sacc = extractacc(curlist[1])
+            if qacc not in bdict.keys():
+                bdict[qacc] = []
+                bdict[qacc].append([sacc,curlist[2]])#,curlist[3]])
             else:
-                bdict[curlist[0]].append([curlist[1],curlist[2],curlist[3]])
+                bdict[qacc].append([sacc,curlist[2]])#,curlist[3]])
         prevline = line
 
 fdict = {}
@@ -63,19 +66,19 @@ for query in fdict:
                 rdict = {}
                 parseblast(rf,rdict)
                 qcounter = 1
-                for fhit,feval,ftitle in fdict[query]:
+                for fhit,feval in fdict[query]:#ftitle in fdict[query]:
                     for subj in rdict:
                         if fhit == subj and float(feval) <= float(args.evalue):
                             scounter = 1
                             lo.write("%s,%s,%s," % (query,fhit,feval))
-                            for rhit,reval,rtitle in rdict[subj]:
+                            for rhit,reval in rdict[subj]:#,rtitle in rdict[subj]:
                                 if scounter < int(args.numhits) + 1:
                                     if float(reval) <= float(args.evalue):
                                         lo.write("%s,%s," % (rhit,reval))
                                         if rhit == query and scounter == 1:
                                             ro.write("%s,%s,%s,%s,%s,%s," % (qcounter,query,scounter,fhit,feval,reval))
                                             ro.write('confirmed hit,')
-                                            ro.write("%s" % (rtitle))
+                                            #ro.write("%s" % (rtitle))
                                             ro.write('\n')
                                         elif rhit == query and scounter != 1:
                                             #print 'reval: ' + reval
@@ -84,7 +87,7 @@ for query in fdict:
                                             if abs(float(reval) - float(rdict[subj][0][1])) > float(args.cutoff):
                                                 ro.write("%s,%s,%s,%s,%s,%s," % (qcounter,query,scounter,fhit,feval,reval))
                                                 ro.write('tenuous hit,')
-                                                ro.write("%s" % (rtitle))
+                                                #ro.write("%s" % (rtitle))
                                                 ro.write('\n')
                                     scounter += 1
                             lo.write('\n')
